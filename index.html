@@ -51,7 +51,7 @@
         var address = info.aadress;
 
         // Teeme API päringu
-        fetch(`https://inaadress.maaamet.ee/inaadress/gazetteer?address=${encodeURIComponent(address)}&seosreg=1&ehr1=1`)
+        fetch(`https://inaadress.maaamet.ee/inaadress/gazetteer?address=${encodeURIComponent(address)}&seosreg=1&features=KATASTRIYKSUS&ehr1=1`)
           .then(response => response.json())
           .then(data => {
             // Täidame Tally peidetud väljad saadud andmetega
