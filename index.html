@@ -50,24 +50,30 @@
         var info = e.detail;
         var address = info.aadress;
 
-        // Teeme API päringu
+        // Teeme esimese API päringu
         fetch(`https://inaadress.maaamet.ee/inaadress/gazetteer?address=${encodeURIComponent(address)}&seosreg=1&ehr1=1`)
           .then(response => response.json())
           .then(data => {
-            // Täidame Tally peidetud väljad saadud andmetega
-            const iframe = document.querySelector("iframe[data-tally-src]");
-            if (iframe) {
-              const params = new URLSearchParams();
-              params.append("aadress", data.addresses[0].ipikkaadress);
-              params.append("ehr_kood", data.addresses[0].ehr[0].ehr_kood);
-              params.append("ehitise_nimetus", data.addresses[0].ehr[0].ehitise_nimetus);
-              params.append("ehitisealune_pind", data.addresses[0].ehr[0].ehitisalune_pind);
-              params.append("kasutusotstarve", data.addresses[0].ehr[0].kasutusotstarbed.replace(/^\d+\s/, ''));
-              params.append("katastri_nr", data.addresses[1].tunnus); // Lisame katastri tunnuse
-              iframe.src = `${iframe.src}&${params.toString()}`;
-              console.log("iframe src", iframe.src);
-              console.log("Set the embedded URL parameters to", params.toString());
-            }
+            // Teeme teise API päringu katastri tunnuse saamiseks
+            fetch(`https://inaadress.maaamet.ee/inaadress/gazetteer?address=${encodeURIComponent(address)}&seosreg=1&features=KATASTRIYKSUS`)
+              .then(response => response.json())
+              .then(katastriData => {
+                // Täidame Tally peidetud väljad saadud andmetega
+                const iframe = document.querySelector("iframe[data-tally-src]");
+                if (iframe) {
+                  const params = new URLSearchParams();
+                  params.append("aadress", data.addresses[0].ipikkaadress);
+                  params.append("ehr_kood", data.addresses[0].ehr[0].ehr_kood);
+                  params.append("ehitise_nimetus", data.addresses[0].ehr[0].ehitise_nimetus);
+                  params.append("ehitisealune_pind", data.addresses[0].ehr[0].ehitisalune_pind);
+                  params.append("kasutusotstarve", data.addresses[0].ehr[0].kasutusotstarbed.replace(/^\d+\s/, ''));
+                  params.append("katastri_nr", katastriData.addresses[0].tunnus); // Lisame katastri tunnuse
+                  iframe.src = `${iframe.src}&${params.toString()}`;
+                  console.log("iframe src", iframe.src);
+                  console.log("Set the embedded URL parameters to", params.toString());
+                }
+              })
+              .catch(error => console.error("Error fetching katastri data:", error));
           })
           .catch(error => console.error("Error fetching address data:", error));
       });
