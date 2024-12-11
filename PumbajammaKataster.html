@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>In-ADS komponent</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script type="text/javascript" src="https://inaadress.maaamet.ee/inaadress/js/inaadress.min.js?d=20220510"></script>
+    <style>
+      .page-title {
+        font-family: Inter, sans-serif;
+        font-size: 24px;
+        font-weight: 600;
+        padding-top: 2em;
+        padding-left: 8px;
+      }
+      .section-title {
+        font-family: Inter, sans-serif;
+        font-size: 20px;
+        font-weight: 600;
+        padding-top: 1em;
+        padding-left: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="page-title">Soojuspumba ehitusteatis</h1>
+      <h3 class="section-title">Aadress <span class="required">*</span></h3>
+    </div>
+    <div id="InAadressDiv" style="width: 600px; height: 450px"></div>
+
+    <script>
+      var inAadress = new InAadress({
+        container: "InAadressDiv",
+        mode: 1,
+        ihist: "1993",
+        tools: ["measure"],
+        searchLayers: ["EHITISHOONE"],
+        displayfilter: true,
+        defaultBaseLayer: "ALUSKAART",
+        baseLayers: ["ALUSKAART"],
+        mapLayers: ["AADRESS"],
+        WMS: [],
+        appartment: 1,
+        lang: "et",
+      });
+
+      document.addEventListener("addressSelected", function (e) {
+        var info = e.detail;
+        var address = info.aadress;
+
+        // Teeme API päringu
+        fetch(`https://inaadress.maaamet.ee/inaadress/gazetteer?address=${encodeURIComponent(address)}&seosreg=1&ehr1=1`)
+          .then(response => response.json())
+          .then(data => {
+            // Täidame Tally peidetud väljad saadud andmetega
+            const iframe = document.querySelector("iframe[data-tally-src]");
+            if (iframe) {
+              const params = new URLSearchParams();
+              params.append("aadress", data.addresses[0].ipikkaadress);
+              params.append("ehr_kood", data.addresses[0].ehr[0].ehr_kood);
+              params.append("ehitise_nimetus", data.addresses[0].ehr[0].ehitise_nimetus);
+              params.append("ehitisealune_pind", data.addresses[0].ehr[0].ehitisalune_pind);
+              params.append("kasutusotstarve", data.addresses[0].ehr[0].kasutusotstarbed.replace(/^\d+\s/, ''));
+              params.append("katastri_nr", data.addresses[1].tunnus); // Lisame katastri tunnuse
+              iframe.src = `${iframe.src}&${params.toString()}`;
+              console.log("iframe src", iframe.src);
+              console.log("Set the embedded URL parameters to", params.toString());
+            }
+          })
+          .catch(error => console.error("Error fetching address data:", error));
+      });
+    </script>
+
+    <iframe
+      data-tally-src="https://tally.so/embed/mJVQM7?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
+      loading="lazy"
+      width="100%"
+      height="1917"
+      frameborder="0"
+      marginheight="0"
+      marginwidth="0"
+      title="null"
+    ></iframe>
+    <script>
+      var d = document,
+        w = "https://tally.so/widgets/embed.js",
+        v = function () {
+          "undefined" != typeof Tally
+            ? Tally.loadEmbeds()
+            : d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function (e) {
+                e.src = e.dataset.tallySrc;
+              });
+        };
+      if ("undefined" != typeof Tally) v();
+      else if (d.querySelector('script[src="' + w + '"]') == null) {
+        var s = d.createElement("script");
+        (s.src = w), (s.onload = v), (s.onerror = v), d.body.appendChild(s);
+      }
+    </script>
+  </body>
+</html>
