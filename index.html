@@ -67,7 +67,7 @@
                   params.append("ehitise_nimetus", data.addresses[0].ehr[0].ehitise_nimetus);
                   params.append("ehitisealune_pind", data.addresses[0].ehr[0].ehitisalune_pind);
                   params.append("kasutusotstarve", data.addresses[0].ehr[0].kasutusotstarbed.replace(/^\d+\s/, ''));
-                  params.append("katastri_nr", katastriData.addresses[0].tunnus); // Lisame katastri tunnuse
+                  params.append("katastri_nr", `'${katastriData.addresses[0].tunnus}`); // Lisame katastri tunnuse tekstina
                   iframe.src = `${iframe.src}&${params.toString()}`;
                   console.log("iframe src", iframe.src);
                   console.log("Set the embedded URL parameters to", params.toString());
